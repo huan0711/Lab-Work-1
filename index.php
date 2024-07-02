@@ -1,12 +1,12 @@
 <?php
-// session 15分鐘
+// session 15
 $session_duration = 15 * 60; // 15 minutes in seconds
 
 session_set_cookie_params($session_duration);
 session_start();
 
-// 導至message.php
-if (isset($_SESSION['username'])) {
+if (isset($_SESSION['username'])) 
+{
     header("location: message.php");
     exit;
 }
@@ -15,22 +15,29 @@ require_once "config.php";
 
 $login_err = '';
 
-if ($_SERVER["REQUEST_METHOD"] == "POST") {
-    if (isset($_POST['action']) && $_POST['action'] == 'login') {
-        // 登入邏輯
+if ($_SERVER["REQUEST_METHOD"] == "POST") 
+{
+    if (isset($_POST['action']) && $_POST['action'] == 'login') 
+    {
+        // 登入
         $username = $_POST['username'];
         $password = $_POST['password'];
 
         $sql = "SELECT id, username, password FROM users WHERE username = ?";
-        if ($stmt = mysqli_prepare($link, $sql)) {
+        if ($stmt = mysqli_prepare($link, $sql)) 
+        {
             mysqli_stmt_bind_param($stmt, "s", $param_username);
             $param_username = $username;
-            if (mysqli_stmt_execute($stmt)) {
+            if (mysqli_stmt_execute($stmt)) 
+            {
                 mysqli_stmt_store_result($stmt);
-                if (mysqli_stmt_num_rows($stmt) == 1) {
+                if (mysqli_stmt_num_rows($stmt) == 1) 
+                {
                     mysqli_stmt_bind_result($stmt, $id, $username, $stored_password);
-                    if (mysqli_stmt_fetch($stmt)) {
-                        if ($password == $stored_password) {
+                    if (mysqli_stmt_fetch($stmt)) 
+                    {
+                        if ($password == $stored_password) 
+                        {
                             $_SESSION['id'] = $id;
                             $_SESSION['username'] = $username;
                             header("location: message.php");
@@ -44,46 +51,58 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                     $login_err = "No account found with that username.";
                     $_SESSION['login_err'] = "帳號或密碼錯誤。";
                 }
-            } else {
+            } else 
+            {
                 echo "Oops! Something went wrong. Please try again later.";
             }
             mysqli_stmt_close($stmt);
         }
-    } elseif (isset($_POST['action']) && $_POST['action'] == 'register') {
-        // 註冊邏輯
+    } elseif (isset($_POST['action']) && $_POST['action'] == 'register') 
+    {
+        // 註冊
         $username = $_POST['reg_username'];
         $password = $_POST['reg_password'];
         $confirm_password = $_POST['confirm_password'];
 
-        if ($password != $confirm_password) {
+        if ($password != $confirm_password) 
+        {
             $register_err = "Passwords do not match.";
-        } else {
+        } else 
+        {
             $sql = "SELECT id FROM users WHERE username = ?";
-            if ($stmt = mysqli_prepare($link, $sql)) {
+            if ($stmt = mysqli_prepare($link, $sql)) 
+            {
                 mysqli_stmt_bind_param($stmt, "s", $param_username);
                 $param_username = $username;
 
-                if (mysqli_stmt_execute($stmt)) {
+                if (mysqli_stmt_execute($stmt)) 
+                {
                     mysqli_stmt_store_result($stmt);
-                    if (mysqli_stmt_num_rows($stmt) == 1) {
+                    if (mysqli_stmt_num_rows($stmt) == 1) 
+                    {
                         $register_err = "This username is already taken.";
-                    } else {
-                        // 插入新用戶
+                    } else 
+                    {
+                        // 新user
                         $sql = "INSERT INTO users (username, password) VALUES (?, ?)";
-                        if ($stmt = mysqli_prepare($link, $sql)) {
+                        if ($stmt = mysqli_prepare($link, $sql)) 
+                        {
                             mysqli_stmt_bind_param($stmt, "ss", $param_username, $param_password);
                             $param_password = $password;
 
-                            if (mysqli_stmt_execute($stmt)) {
+                            if (mysqli_stmt_execute($stmt)) 
+                            {
                                 header("location: index.php?success=1");
                                 exit;
-                            } else {
+                            } else 
+                            {
                                 $register_err = "Something went wrong. Please try again later.";
                             }
                             mysqli_stmt_close($stmt);
                         }
                     }
-                } else {
+                } else 
+                {
                     echo "Oops! Something went wrong. Please try again later.";
                 }
                 mysqli_stmt_close($stmt);
@@ -117,7 +136,8 @@ mysqli_close($link);
     <form action="index.php" method="post">
 			<h1>Create Account</h1>
             <?php 
-        if (!empty($register_err)) {
+        if (!empty($register_err)) 
+        {
             echo '<div class="alert alert-danger">' . $register_err . '</div>';
         }        
         ?>
@@ -163,7 +183,6 @@ mysqli_close($link);
 		</div>
 	</div>
 </div>
-
 <div class="footer">
   @2024 MMDB
 </div>

@@ -1,6 +1,6 @@
 <?php
-// session 15分鐘
-$session_duration = 15 * 60; // 15 minutes in seconds
+// session 15
+$session_duration = 15 * 60;
 
 session_set_cookie_params($session_duration);
 session_start();
@@ -9,20 +9,18 @@ if (!isset($_SESSION['username'])) {
     header("location: index.php");
     exit;
 }
-
 require_once "config.php";
 
-// 處理訊息
 $message = isset($_SESSION['message']) ? $_SESSION['message'] : '';
 $error = isset($_SESSION['error']) ? $_SESSION['error'] : '';
 
-// 清除 session 中的訊息
+// 清除session訊息
 unset($_SESSION['message']);
 unset($_SESSION['error']);
 
 // 登出
-if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['action']) && $_POST['action'] == 'logout') {
-    // 清除session
+if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['action']) && $_POST['action'] == 'logout') 
+{
     $_SESSION = array();
     
     // 刪除session cookie
@@ -43,7 +41,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['action']) && $_POST['a
 }
 
 // 新增留言
-if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['action']) && $_POST['action'] == 'add') {
+if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['action']) && $_POST['action'] == 'add')
+{
     $content = $_POST['content'];
     $user_id = $_SESSION['id'];
     
@@ -52,39 +51,47 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['action']) && $_POST['a
     $error = '';
 
     // 檔案上傳
-    if (!empty($_FILES["fileToUpload"]["name"][0])) {
-        $target_dir = "uploads/"; // 上傳檔案的目標資料夾
+    if (!empty($_FILES["fileToUpload"]["name"][0])) 
+    {
+        $target_dir = "uploads/";
 
-        for ($i = 0; $i < count($_FILES["fileToUpload"]["name"]); $i++) {
+        for ($i = 0; $i < count($_FILES["fileToUpload"]["name"]); $i++) 
+        {
             $target_file = $target_dir . basename($_FILES["fileToUpload"]["name"][$i]);
             $fileType = strtolower(pathinfo($target_file, PATHINFO_EXTENSION));
 
             // 檢查檔案是否存在
-            if (file_exists($target_file)) {
+            if (file_exists($target_file)) 
+            {
                 $error .= "檔案已存在: " . $_FILES["fileToUpload"]["name"][$i] . "<br>";
                 $uploadOk = 0;
             }
 
             // 檔案大小
-            if ($_FILES["fileToUpload"]["size"][$i] > 5000000) {
+            if ($_FILES["fileToUpload"]["size"][$i] > 5000000) 
+            {
                 $error .= "檔案過大: " . $_FILES["fileToUpload"]["name"][$i] . "<br>";
                 $uploadOk = 0;
             }
 
-            // 允許特定的檔案格式
-            if ($fileType != "jpg" && $fileType != "png" && $fileType != "jpeg" && $fileType != "pdf"&& $fileType != "doc" && $fileType != "docx"&& $fileType != "pptx") {
+            // 檔案格式
+            if ($fileType != "jpg" && $fileType != "png" && $fileType != "jpeg" && $fileType != "pdf"&& $fileType != "doc" && $fileType != "docx"&& $fileType != "pptx") 
+            {
                 $error .= "僅允許 JPG, JPEG, PNG, PDF, DOC & DOCX,PPT 檔案格式: " . $_FILES["fileToUpload"]["name"][$i] . "<br>";
                 $uploadOk = 0;
             }
 
             // 檢查是否有誤
-            if ($uploadOk == 0) {
+            if ($uploadOk == 0) 
+            {
                 $error .= "檔案上傳失敗: " . $_FILES["fileToUpload"]["name"][$i] . "<br>";
                 break;
             } else {
-                if (move_uploaded_file($_FILES["fileToUpload"]["tmp_name"][$i], $target_file)) {
+                if (move_uploaded_file($_FILES["fileToUpload"]["tmp_name"][$i], $target_file)) 
+                {
                     $file_paths[] = $target_file;
-                } else {
+                } else 
+                {
                     $error .= "檔案上傳失敗: " . $_FILES["fileToUpload"]["name"][$i] . "<br>";
                     $uploadOk = 0;
                     break;
@@ -93,19 +100,23 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['action']) && $_POST['a
         }
     }
 
-    if ($uploadOk) {
+    if ($uploadOk) 
+    {
         $file_paths_str = implode(",", $file_paths);
         $sql = "INSERT INTO messages (user_id, content, file_path) VALUES (?, ?, ?)";
-        if ($stmt = mysqli_prepare($link, $sql)) {
+        if ($stmt = mysqli_prepare($link, $sql))
+        {
             mysqli_stmt_bind_param($stmt, "iss", $user_id, $content, $file_paths_str);
-            if (mysqli_stmt_execute($stmt)) {
+            if (mysqli_stmt_execute($stmt)) 
+            {
                 $_SESSION['message'] = "留言已新增";
             } else {
-                $_SESSION['error'] = "留言新增失敗，請稍後再試。";
+                $_SESSION['error'] = "留言新增失敗。";
             }
             mysqli_stmt_close($stmt);
         }
-    } else {
+    } else 
+    {
         $_SESSION['error'] = $error;
     }
 
@@ -113,18 +124,20 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['action']) && $_POST['a
     exit;
 }
 
-// 刪除留言
-if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['action']) && $_POST['action'] == 'delete') {
+// 刪留言
+if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['action']) && $_POST['action'] == 'delete') 
+{
     $message_id = $_POST['message_id'];
     $user_id = $_SESSION['id'];
 
     $sql = "DELETE FROM messages WHERE id = ? AND user_id = ?";
-    if ($stmt = mysqli_prepare($link, $sql)) {
+    if ($stmt = mysqli_prepare($link, $sql)) 
+    {
         mysqli_stmt_bind_param($stmt, "ii", $message_id, $user_id);
         if (mysqli_stmt_execute($stmt)) {
             $_SESSION['message'] = "留言已刪除";
         } else {
-            $_SESSION['error'] = "留言刪除失敗，請稍後再試。";
+            $_SESSION['error'] = "刪除失敗";
         }
         mysqli_stmt_close($stmt);
     }
@@ -134,18 +147,21 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['action']) && $_POST['a
 }
 
 // 更新留言
-if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['action']) && $_POST['action'] == 'edit') {
+if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['action']) && $_POST['action'] == 'edit') 
+{
     $message_id = $_POST['message_id'];
     $content = $_POST['content'];
     $user_id = $_SESSION['id'];
 
     $sql = "UPDATE messages SET content = ? WHERE id = ? AND user_id = ?";
-    if ($stmt = mysqli_prepare($link, $sql)) {
+    if ($stmt = mysqli_prepare($link, $sql)) 
+    {
         mysqli_stmt_bind_param($stmt, "sii", $content, $message_id, $user_id);
-        if (mysqli_stmt_execute($stmt)) {
+        if (mysqli_stmt_execute($stmt)) 
+        {
             $_SESSION['message'] = "留言已更新";
         } else {
-            $_SESSION['error'] = "留言更新失敗，請稍後再試。";
+            $_SESSION['error'] = "留言更新失敗";
         }
         mysqli_stmt_close($stmt);
     }
@@ -154,7 +170,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['action']) && $_POST['a
     exit;
 }
 
-// 獲取所有留言
+// 抓留言
 $sql = "SELECT messages.id, messages.content, messages.file_path, messages.created_at, users.username 
         FROM messages 
         JOIN users ON messages.user_id = users.id 
@@ -173,9 +189,6 @@ mysqli_close($link);
         <link rel="stylesheet" href="mes.css">
     </head>
     <body>
-    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
-    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
         <h1>留言板</h1>
         <form action="message.php" method="post" class="logout-form">
             <input type="hidden" name="action" value="logout">
@@ -196,7 +209,6 @@ mysqli_close($link);
             <input type="file" id="fileToUpload" name="fileToUpload[]" multiple>
             <button type="submit">新增</button>
             <br>
-            <!-- 將檔案上傳設置為非必填 -->
         </form>
         <div class="messages">
             <?php while ($row = mysqli_fetch_assoc($result)): ?>
@@ -205,7 +217,8 @@ mysqli_close($link);
                     <?php if (!empty($row['file_path'])): ?>
                         <?php 
                         $files = explode(",", $row['file_path']);
-                        foreach ($files as $file) {
+                        foreach ($files as $file) 
+                        {
                             echo '<p><a href="' . htmlspecialchars($file) . '" download>下載檔案</a></p>';
                         }
                         ?>
